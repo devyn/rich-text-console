@@ -1,0 +1,75 @@
+require 'rubygems'
+require 'treetop'
+require 'cgi' # for escapeHTML
+
+module RichTextConsole
+  grammar RTDL
+    rule document
+      "" tags:tag+ {
+        def compile
+          tags.elements.map { |t| t.represent }
+        end
+        def html
+          s = ""
+          compile.each do |sg|
+            case sg
+            when Hash
+              sty = ""
+              sg.each do |k,v|
+                case k
+                when 'fc'
+                  sty << "color:##{v.to_i(16).to_s(16)};"
+                when 'bc'
+                  sty << "background-color:##{v.to_i(16).to_s(16)};"
+                when 'b'
+                  sty << "font-weight:bold;"
+                when 'i'
+                  sty << "font-style:italic;"
+                when 'u'
+                  sty << "text-decoration:underline;"
+                when 'fs'
+                  sty << "font-size:#{v.to_i}pt;"
+                end
+              end
+              s << "<span style=\"#{sty}\">"
+            when :end
+              s << "</span>"
+            else
+              s << CGI.escapeHTML(sg).gsub("\n", "<br/>")
+            end
+          end
+          return s
+        end
+      }
+    end
+    rule tag
+      "\e[" "/" "]" {
+        def represent
+          :end
+        end
+      } /
+      "\e[" options:(option (',' &option / ""))+ "]" {
+        def represent
+          Hash[options.elements.map {|o| o.option.pair }]
+        end
+      } /
+      ("\e" / [^\e]+) {
+        def represent
+          text_value
+        end
+      }
+    end
+    rule option
+      name:[A-Za-z]+ "=" value:[^,\]]* {
+        def pair
+          [name.text_value, value.text_value]
+        end
+      } /
+      [A-Za-z]+ {
+        def pair
+          [text_value, nil]
+        end
+      }
+    end
+  end
+end
