@@ -62,7 +62,7 @@ module RichTextConsole
                 when 'bc'
                   styles[-1][:fill] = "##{v.to_i(16).to_s(16)}"
                 when 'b'
-                  styles[-1][:weight] = 700
+                  styles[-1][:weight] = 'bold'
                 when 'i'
                   styles[-1][:emphasis] = 'italic'
                 when 'u'
