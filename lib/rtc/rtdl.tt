@@ -46,40 +46,46 @@ module RichTextConsole
           return s
         end
         # write to a Shoes flow (can be an app, too)
-        def shoes(flow, global_style=nil)
-          global_style ||= {:family => "monospace", :margin => 0}
-          cstyle = global_style.dup
-          styles = []
-          update_style = proc { cstyle = global_style.dup; styles.each {|sty| cstyle = cstyle.update(sty) } }
+        def shoes(flow)
+          unless flow.respond_to?(:rtc) and flow.respond_to?(:rtc=)
+            class << flow
+              attr_accessor :rtc
+            end
+          end
+          flow.rtc         ||= {}
+          flow.rtc[:gst]   ||= {:family => "monospace", :margin => 0}
+          flow.rtc[:style] ||= flow.rtc[:gst].dup
+          flow.rtc[:stack] ||= []
+          update_style = proc { flow.rtc[:style] = flow.rtc[:gst].dup; flow.rtc[:stack].each {|sty| flow.rtc[:style].update(sty) } }
           compile.each do |sg|
             case sg
             when Hash
-              styles << {}
+              flow.rtc[:stack] << (st = {})
               sg.each do |k,v|
                 case k
                 when 'fc'
-                  styles[-1][:stroke] = "##{v.to_i(16).to_s(16)}"
+                  st[:stroke] = "##{v.to_i(16).to_s(16)}"
                 when 'bc'
-                  styles[-1][:fill] = "##{v.to_i(16).to_s(16)}"
+                  st[:fill] = "##{v.to_i(16).to_s(16)}"
                 when 'b'
-                  styles[-1][:weight] = 'bold'
+                  st[:weight] = 'bold'
                 when 'i'
-                  styles[-1][:emphasis] = 'italic'
+                  st[:emphasis] = 'italic'
                 when 'u'
-                  styles[-1][:undercolor] = st[:stroke]||cstyle[:stroke]||"#000000"
+                  st[:undercolor] = st[:stroke]||cstyle[:stroke]||"#000000"
                 when 'fs'
-                  styles[-1][:size] = v.to_i
+                  st[:size] = v.to_i
                 end
               end
               update_style.call
             when :end
-              styles.delete_at -1
+              flow.rtc[:stack].delete_at -1
               update_style.call
             when :reset
-              styles = []
+              flow.rtc[:stack] = []
               update_style.call
             else
-              flow.para sg, cstyle
+              flow.para sg, flow.rtc[:style]
             end
           end
           return flow
