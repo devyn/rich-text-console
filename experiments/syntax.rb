@@ -26,7 +26,6 @@ Shoes.app do
     }
   }
 
-  @parser \
-    .parse(@string) \
-    .shoes(self)
+  pa = @parser.parse(@string)
+  pa.shoes(self)
 end

@@ -16,7 +16,7 @@ Shoes.app do
   background black
   
   @parser  = RichTextConsole::RTDLParser.new
-  @process = RichTextConsole::ExternalProcess.new("curl http://github.com/feeds/devyn/commits/rich-text-console/master")
+  @process = RichTextConsole::ExternalProcess.new("ruby ../util/shell.rb")
   @queue   = []
   @rtc     = {:gst => {:stroke => "#ffffff", :family => "Inconsolata", :size => 14, :margin => 0}}
 

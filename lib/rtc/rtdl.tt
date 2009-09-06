@@ -28,9 +28,9 @@ module RichTextConsole
               sg.each do |k,v|
                 case k
                 when 'fc'
-                  st[:stroke] = "##{v.to_i(16).to_s(16)}"
+                  st[:stroke] = "##{v}"
                 when 'bc'
-                  st[:fill] = "##{v.to_i(16).to_s(16)}"
+                  st[:fill] = "##{v}"
                 when 'b'
                   st[:weight] = 'bold'
                 when 'i'
