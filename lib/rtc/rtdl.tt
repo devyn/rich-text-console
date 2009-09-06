@@ -20,6 +20,7 @@ module RichTextConsole
           flow.rtc[:gst]   ||= {:family => "monospace", :margin => 0}
           flow.rtc[:style] ||= flow.rtc[:gst].dup
           flow.rtc[:stack] ||= []
+          flow.rtc[:track] ||= []
           update_style = proc { flow.rtc[:style] = flow.rtc[:gst].dup; flow.rtc[:stack].each {|sty| flow.rtc[:style].update(sty) } }
           compile.each do |sg|
             case sg
@@ -42,6 +43,33 @@ module RichTextConsole
                 end
               end
               update_style.call
+            when Array
+              case sg.first
+              when :cl
+                if sg[1]
+                  flow.clear { flow.background "##{sg[1]}" }
+                else
+                  flow.clear { flow.background "#000000" }
+                end
+                flow.rtc[:stack] = []
+                flow.rtc[:track] = []
+                update_style.call
+              when :d
+                next unless sg[1]
+                cn = sg[1].to_i
+                until cn == 0
+                  break if flow.rtc[:track].empty?
+                  lst = flow.rtc[:track].last
+                  if lst.text.size <= cn
+                    cn -= lst.text.size
+                    flow.rtc[:track].delete_at -1
+                    lst.remove
+                  else
+                    lst.replace(lst.text.sub(/.{#{cn}}$/m,''))
+                    cn = 0
+                  end
+                end
+              end
             when :end
               flow.rtc[:stack].delete_at -1
               update_style.call
@@ -49,7 +77,7 @@ module RichTextConsole
               flow.rtc[:stack] = []
               update_style.call
             else
-              flow.para sg, flow.rtc[:style]
+              flow.rtc[:track] << flow.para(sg, flow.rtc[:style])
             end
           end
           return flow
@@ -65,6 +93,11 @@ module RichTextConsole
       "\e[" "//" "]" {
         def represent
           :reset
+        end
+      } /
+      "\e[." method arguments:(" " argument)* "]" {
+        def represent
+          [method.text_value.to_sym, *arguments.elements.map{|a|a.argument.text_value}]
         end
       } /
       "\e[" options:(option (',' &option / ""))+ "]" {
@@ -89,6 +122,12 @@ module RichTextConsole
           [text_value, nil]
         end
       }
+    end
+    rule method
+      [A-Za-z]+
+    end
+    rule argument
+      [^ \]]+
     end
   end
 end
