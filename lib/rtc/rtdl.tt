@@ -11,6 +11,7 @@ module RichTextConsole
         end
         # make it into HTML, primarily for a WebKit interface.
         def html
+          depth = 0
           s = ""
           compile.each do |sg|
             case sg
@@ -33,8 +34,11 @@ module RichTextConsole
                 end
               end
               s << "<span style=\"#{sty}\">"
+              depth += 1
             when :end
-              s << "</span>"
+              s << "</span>" unless depth < 1
+            when :reset
+              s << "</span>"*depth
             else
               s << CGI.escapeHTML(sg).gsub("\n", "<br/>")
             end
@@ -43,7 +47,7 @@ module RichTextConsole
         end
         # write to a Shoes flow (can be an app, too)
         def shoes(flow, global_style=nil)
-          global_style ||= {:font => "monospace", :margin => 0}
+          global_style ||= {:family => "monospace", :margin => 0}
           cstyle = global_style.dup
           styles = []
           update_style = proc { cstyle = global_style.dup; styles.each {|sty| cstyle = cstyle.update(sty) } }
@@ -71,6 +75,9 @@ module RichTextConsole
             when :end
               styles.delete_at -1
               update_style.call
+            when :reset
+              styles = []
+              update_style.call
             else
               flow.para sg, cstyle
             end
@@ -83,6 +90,11 @@ module RichTextConsole
       "\e[" "/" "]" {
         def represent
           :end
+        end
+      } /
+      "\e[" "//" "]" {
+        def represent
+          :reset
         end
       } /
       "\e[" options:(option (',' &option / ""))+ "]" {

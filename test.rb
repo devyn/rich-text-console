@@ -13,6 +13,10 @@ Shoes.app do
   background black
   @parser = RichTextConsole::RTDLParser.new
   @parser \
-    .parse("\e[b,fc=22ccff]Shoes\e[/].app \e[fc=dd9900]do\e[/]\n  \e[fc=dd3300]button\e[/](\e[fc=66dd66]\"Click Me!\"\e[/]) \e[bc=333333]{\e[/]\n    \e[fc=dd3300]alert\e[/] \e[fc=66dd66]\"You clicked me!\"\e[/]\n  \e[bc=333333]}\e[/]\n\e[fc=dd9900]end\e[/]") \
-    .shoes(self, :font => "Inconsolata 14", :stroke => "#ffffff", :margin => 0)
+    .parse("\e[b,fc=22ccff]Shoes\e[/].app \e[fc=dd9900]do\e[/]
+  \e[fc=999999,i]# this is pure Shoes awesomeness.\e[/]
+  \e[fc=dd3300]button\e[/](\e[fc=66dd66]\e[fc=dd9900]\"\e[/]Click Me!\e[fc=dd9900]\"\e[//]) \e[bc=333333]{\e[/]
+    \e[fc=dd3300]alert\e[/] \e[fc=66dd66]\e[fc=dd9900]\"\e[/]You clicked me!\e[fc=dd9900]\"\e[//]
+  \e[bc=333333]}\e[/]\n\e[fc=dd9900]end\e[/]") \
+    .shoes(self, :family => "Inconsolata", :size => 14, :stroke => "#ffffff", :margin => 0)
 end
