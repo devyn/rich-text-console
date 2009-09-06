@@ -9,42 +9,6 @@ module RichTextConsole
         def compile
           tags.elements.map { |t| t.represent }
         end
-        # make it into HTML, primarily for a WebKit interface.
-        def html
-          depth = 0
-          s = ""
-          compile.each do |sg|
-            case sg
-            when Hash
-              sty = ""
-              sg.each do |k,v|
-                case k
-                when 'fc'
-                  sty << "color:##{v.to_i(16).to_s(16)};"
-                when 'bc'
-                  sty << "background-color:##{v.to_i(16).to_s(16)};"
-                when 'b'
-                  sty << "font-weight:bold;"
-                when 'i'
-                  sty << "font-style:italic;"
-                when 'u'
-                  sty << "text-decoration:underline;"
-                when 'fs'
-                  sty << "font-size:#{v.to_i}pt;"
-                end
-              end
-              s << "<span style=\"#{sty}\">"
-              depth += 1
-            when :end
-              s << "</span>" unless depth < 1
-            when :reset
-              s << "</span>"*depth
-            else
-              s << CGI.escapeHTML(sg).gsub("\n", "<br/>")
-            end
-          end
-          return s
-        end
         # write to a Shoes flow (can be an app, too)
         def shoes(flow)
           unless flow.respond_to?(:rtc) and flow.respond_to?(:rtc=)
