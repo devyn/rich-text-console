@@ -4,7 +4,7 @@ Shoes.setup do
   gem 'treetop'
 end
 
-$:.unshift File.join(File.dirname(__FILE__), 'lib')
+$:.unshift File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))
 
 require 'rubygems'
 require 'rtc/rtdl'
