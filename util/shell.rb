@@ -31,13 +31,16 @@ def cyan(*s); color "00ffff", s; end
 
 # program
 
-puts green("welcome to ", em("RichTextShell"), ".")
+$stdout.sync = true
+
+$stdout.write green("welcome to ", em("RichTextShell"), ".") + "\n"
 
 loop do
-  print cyan(ENV['USER'], strong("% "))
-  cmd, args = "exit".shellsplit
+  $stdout.write cyan(ENV['USER'], strong("% "))
+  break unless g = $stdin.gets
+  cmd, args = g.chomp.shellsplit
   break if cmd == 'exit'
-  puts red("command undefined: ", strong(em(cmd)))
+  $stdout.write red("command undefined: ", strong(em(cmd))) + "\n"
 end
 
-puts green("goodbye.")
+$stdout.write green("goodbye.") + "\n"
