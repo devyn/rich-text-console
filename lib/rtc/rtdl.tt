@@ -5,9 +5,11 @@ module RichTextConsole
   grammar RTDL
     rule document
       "" tags:tag+ {
+        # compile it all into an intermediate format.
         def compile
           tags.elements.map { |t| t.represent }
         end
+        # make it into HTML, primarily for a WebKit interface.
         def html
           s = ""
           compile.each do |sg|
@@ -39,6 +41,42 @@ module RichTextConsole
           end
           return s
         end
+        # write to a Shoes flow (can be an app, too)
+        def shoes(flow, global_style=nil)
+          global_style ||= {:font => "monospace", :margin => 0}
+          cstyle = global_style.dup
+          styles = []
+          update_style = proc { cstyle = global_style.dup; styles.each {|sty| cstyle = cstyle.update(sty) } }
+          compile.each do |sg|
+            case sg
+            when Hash
+              styles << {}
+              sg.each do |k,v|
+                case k
+                when 'fc'
+                  styles[-1][:stroke] = "##{v.to_i(16).to_s(16)}"
+                when 'bc'
+                  styles[-1][:fill] = "##{v.to_i(16).to_s(16)}"
+                when 'b'
+                  styles[-1][:weight] = 700
+                when 'i'
+                  styles[-1][:emphasis] = 'italic'
+                when 'u'
+                  styles[-1][:undercolor] = st[:stroke]||cstyle[:stroke]||"#000000"
+                when 'fs'
+                  styles[-1][:size] = v.to_i
+                end
+              end
+              update_style.call
+            when :end
+              styles.delete_at -1
+              update_style.call
+            else
+              flow.para sg, cstyle
+            end
+          end
+          return flow
+        end
       }
     end
     rule tag
@@ -52,7 +90,7 @@ module RichTextConsole
           Hash[options.elements.map {|o| o.option.pair }]
         end
       } /
-      ("\e" / [^\e]+) {
+      ("\e" / [^\e\n]* "\n" / [^\e]+) {
         def represent
           text_value
         end
