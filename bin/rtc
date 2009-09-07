@@ -19,7 +19,7 @@ Shoes.app do
   @parser  = RichTextConsole::RTDLParser.new
   @process = RichTextConsole::ExternalProcess.new(ARGV[1] || "ruby ../util/shell.rb")
   @queue   = []
-  @rtc     = {:gst => {:stroke => "#ffffff", :family => "Inconsolata", :size => 14, :margin => 0}}
+  @rtc     = {:gst => {:stroke => "#ffffff", :family => "monospace", :size => 12, :margin => 0}}
   @bsable  = 0
   @inline  = ""
 
@@ -34,8 +34,10 @@ Shoes.app do
     case key
     when :backspace, :delete
       @inline.sub!(/.$/,'')
-      @parser.parse("\e[.d 1]").shoes(self) if @bsable >= 1
-      @bsable -= 1
+      if @bsable >= 1
+        @parser.parse("\e[.d 1]").shoes(self)
+        @bsable -= 1
+      end
     when "\n", :enter, :return
       @process.write "#@inline\n"
       @rtc[:track] << para("\n", @rtc[:style])
@@ -46,5 +48,9 @@ Shoes.app do
       @rtc[:track] << para(key, @rtc[:style])
       @bsable += 1
     end
+  end
+
+  at_exit do
+    @process.close
   end
 end
