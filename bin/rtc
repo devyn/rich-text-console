@@ -1,4 +1,5 @@
-#(Shoes)
+#!/usr/bin/env shoes
+# vi:ft=ruby:ts=2:sw=2
 # Technically, it doesn't have to be this complicated
 #   but this way reduces flicker [from being multi-threaded].
 
@@ -16,7 +17,7 @@ Shoes.app do
   background black
   
   @parser  = RichTextConsole::RTDLParser.new
-  @process = RichTextConsole::ExternalProcess.new("ruby ../util/shell.rb")
+  @process = RichTextConsole::ExternalProcess.new(ARGV[1] || "ruby ../util/shell.rb")
   @queue   = []
   @rtc     = {:gst => {:stroke => "#ffffff", :family => "Inconsolata", :size => 14, :margin => 0}}
   @bsable  = 0
